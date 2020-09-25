@@ -1,117 +1,7 @@
 #include<iostream>
 #include<cstdlib>
 #include<ctime>
-
-
-struct Submartrix //方阵
-{   //子矩阵首元素在父矩阵中的位置 
-        int row;
-        int col;
-        int size;//矩阵大小
-        Submartrix(int row, int col, int size) : row(row), col(col), size(size) {}
-};
-
-class Matrix{
-
-public:
-
-    int ** data;
-    int row;
-    int col;
-
-    Matrix(): data(nullptr), row(0), col(0) {}
-
-    Matrix(int row, int col):row(row), col(col) {
-        if(row ==0 || col == 0 ) data = nullptr;
-        else {
-            data = new int*[row];
-            for(int i = 0; i < row; i++) {
-                data[i] = new int[col];
-            }
-        }
-    }
-
-    Matrix(const Matrix& A): row(A.row), col(A.col) {
-        if(row ==0 || col == 0 ) data = nullptr;
-        else {
-            data = new int*[row];
-            for(int i = 0; i < row; i++) {
-                data[i] = new int[col];
-            }
-            for(int i=0; i<row; i++) 
-                for(int j=0; j<col; j++)
-                    data[i][j] = A.data[i][j];
-        }
-    }
-
-    void ProduceMat(const unsigned int & seed) {
-        // srand(seed);
-        for(int i=0; i<row; i++) 
-            for(int j=0; j<col; j++) {
-                srand(seed+i+j);
-                data[i][j] = rand()%10; 
-            }
-    }
-
-    void copy(const Matrix &B, const Submartrix &b) {
-        for (int i = 0; i < b.size; i++)
-            for (int j = 0; j < b.size; j++) B.data[b.row + i][b.col + j] = data[i][j];
-    }
-
-    Matrix operator + (const Matrix &A) {
-        if(row != A.row || col != A.col) return Matrix(0,0);
-        Matrix sum(row,col);
-        for(int i=0; i< row; i++)
-            for(int j=0; j<col;j++) sum.data[i][j] = data[i][j] + A.data[i][j];
-        return sum;
-    }
-
-    Matrix operator - (const Matrix &A) {
-        if(row != A.row || col != A.col) return Matrix(0,0);
-        Matrix sum(row,col);
-        for(int i=0; i< row; i++)
-            for(int j=0; j<col;j++) sum.data[i][j] = data[i][j] - A.data[i][j];
-        return sum;
-    }
-
-    Matrix operator *(const Matrix& A) {
-        if(col != A.row) return Matrix(0,0);
-
-        Matrix C(row,A.col);
-        for(int i=0; i<row; i++)
-            for(int j=0; j<A.col; j++){
-                C.data[i][j] = 0;
-                for(int k=0; k<col; k++)
-                    C.data[i][j] += data[i][k]*A.data[k][j];
-            }
-        return C;
-    }
-
-    Matrix& operator=(const Matrix& A) {
-        if(row != A.row || col !=A.col) return *this;
-
-        for (int i = 0; i < A.row; i++) {
-            for (int j = 0; j < A.col; j++) data[i][j] = A.data[i][j];
-        }
-        return *this;
-    }
-
-    void printMatrix() {
-        for(int i=0; i< 10; i++) {
-            for( int j=0; j<10; j++) 
-                std::cout<<data[i][j]<<" ";
-            std::cout<<'\n';
-        }
-    }
-
-    ~Matrix() {
-        for(int i=0; i<row; i++) {
-            delete [] data[i];
-        }
-        delete [] data;
-    }
-};
-
+#include"Matrix.hpp"
 
 //Strassen算法
 
@@ -144,6 +34,7 @@ Matrix sub_mat(const Matrix &A, const Submartrix &a)
 
 Matrix strassen(const Matrix &A, const Matrix &B, const Submartrix &a,const Submartrix &b)
 {
+    // 划分门槛，防止矩阵划分过小
     if (a.size <= 64)
     {
         Matrix C(a.size,a.size);
@@ -200,7 +91,7 @@ Matrix Strassen(const Matrix &A, const Matrix &B){
 
 int main(void) {
     int m, n, k;
-    std::cout<<"input m, n , k >>";
+    std::cout<<"input m, n , k >> ";
     std::cin>>m>>n>>k;
     Matrix A(m,n), B(n,k);
     time_t start, end, normal, stra;
@@ -210,15 +101,14 @@ int main(void) {
     Matrix C = A*B;
     end = clock();
     normal = end - start;
-    printf("normal C:\n");
+    printf("normal :\n");
     C.printMatrix();
     start = clock();
     Matrix D = Strassen(A,B);
     end = clock();
     stra = end - start;
-    // A.printMatrix();
-    // B.printMatrix();
-    printf("strassen C:\n");
+
+    printf("strassen :\n");
     D.printMatrix();
 
     printf("time : %4f ms\n", normal/(float)(CLOCKS_PER_SEC)*1000);
